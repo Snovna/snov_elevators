@@ -1,3 +1,29 @@
+ESX = exports['es_extended']:getSharedObject()
+local playerJob = nil
+local playerGrade = 0
+
+AddEventHandler('onClientResourceStart', function(resourceName)
+    if GetCurrentResourceName() ~= resourceName then return end
+    while ESX.GetPlayerData().job == nil do
+		Wait(100)
+	end
+    playerJob = ESX.GetPlayerData().job.name
+	playerGrade = ESX.GetPlayerData().job.grade
+end)
+
+RegisterNetEvent('esx:playerLoaded', function()
+    while ESX.GetPlayerData().job == nil do
+		Wait(100)
+	end
+    playerJob = ESX.GetPlayerData().job.name
+	playerGrade = ESX.GetPlayerData().job.grade
+end)
+
+RegisterNetEvent('esx:setJob', function(job, lastJob)
+    playerJob = job.name
+	playerGrade = job.grade
+end)
+
 CreateThread(function()
     local textUIactive = false
     while true do
@@ -57,7 +83,15 @@ RegisterCommand('-sv-interact-elevators', function()
 
     -- Determine the closest interaction point within 2.0 distance
     if closestPoint.distance <= 2.0 and not IsPauseMenuActive() then
-        lib.showContext('snov_elevators_'..closestPoint.elevator)
+        if closestPoint.allowedJobs == nil or lib.table.contains(closestPoint.allowedJobs, playerJob) then
+            lib.showContext('snov_elevators_'..closestPoint.elevator)
+        else
+            lib.notify({
+                title = 'Fahrstuhl',
+                description = 'Du kannst diesen Fahrstuhl nicht benutzen.',
+                type = 'error'
+            })
+        end
     end
 end, false)
 

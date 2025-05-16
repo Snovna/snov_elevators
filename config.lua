@@ -13,6 +13,7 @@ Config.Elevators = {
         {
             display = "0 | Erdgeschoss",
             coords = vector3(473.3159, -983.5985, 30.7104),
+            allowedJobs = { 'police' },
         },
         {
             display = "-1 | Zellen / Garage",
