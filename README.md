@@ -6,7 +6,8 @@ Configurable elevator system for FiveM. Allows players to teleport between prede
 
 - Unlimited configurable elevators with multiple floors each
 - Context menu floor selection via ox_lib
-- Optional job restrictions per elevator
+- Optional job restrictions per floor for entering and exiting
+- Lock down an elevator completely
 - Keybind interaction (default: E)
 - Screen fade transition between floors
 - Automatic version check
@@ -26,9 +27,14 @@ Configurable elevator system for FiveM. Allows players to teleport between prede
 
 Edit `config.lua` to define elevators. Each elevator is a named table containing floor entries with display name, coordinates, and optional job restrictions.
 
+- `allowedJobs`: jobs that can enter the elevator on this floor
+- `exitJobs`: jobs that can travel to this floor (shown as disabled for everyone else)
+- `locked = true` on the elevator: nobody can use it
+
 ```lua
 Config.Elevators = {
     MyElevator = {
+        locked = false, -- optional
         {
             display = "Floor 2",
             coords = vector3(x, y, z),
@@ -37,6 +43,7 @@ Config.Elevators = {
             display = "Floor 1",
             coords = vector3(x, y, z),
             allowedJobs = { 'police' }, -- optional
+            exitJobs = { 'police' }, -- optional
         },
     }
 }

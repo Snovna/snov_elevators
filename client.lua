@@ -51,11 +51,18 @@ CreateThread(function()
     end
 end)
 
-for i, elevator in pairs(Config.Elevators) do
+local function isJobAllowed(jobs)
+    return jobs == nil or lib.table.contains(jobs, playerJob)
+end
+
+local function openElevatorMenu(elevatorName)
     local elevatorOptions = {}
-    for _, floor in ipairs(elevator) do
+    for _, floor in ipairs(Config.Elevators[elevatorName]) do
+        local canExit = isJobAllowed(floor.exitJobs)
         table.insert(elevatorOptions, {
             title = floor.display,
+            disabled = not canExit,
+            description = not canExit and 'Kein Zugang' or nil,
             onSelect = function()
                 DoScreenFadeOut(250)
                 Wait(200)
@@ -64,13 +71,13 @@ for i, elevator in pairs(Config.Elevators) do
                 DoScreenFadeIn(250)
             end
         })
-        
     end
     lib.registerContext({
-        id = 'snov_elevators_'..i,
+        id = 'snov_elevators_'..elevatorName,
         title = 'Fahrstuhl',
         options = elevatorOptions,
     })
+    lib.showContext('snov_elevators_'..elevatorName)
 end
 
 RegisterKeyMapping('-sv-interact-elevators', 'Interact [E]', 'keyboard', 'e')
@@ -83,8 +90,14 @@ RegisterCommand('-sv-interact-elevators', function()
 
     -- Determine the closest interaction point within 2.0 distance
     if closestPoint.distance <= 2.0 and not IsPauseMenuActive() then
-        if closestPoint.allowedJobs == nil or lib.table.contains(closestPoint.allowedJobs, playerJob) then
-            lib.showContext('snov_elevators_'..closestPoint.elevator)
+        if Config.Elevators[closestPoint.elevator].locked then
+            lib.notify({
+                title = 'Fahrstuhl',
+                description = 'Dieser Fahrstuhl ist außer Betrieb.',
+                type = 'error'
+            })
+        elseif isJobAllowed(closestPoint.allowedJobs) then
+            openElevatorMenu(closestPoint.elevator)
         else
             lib.notify({
                 title = 'Fahrstuhl',
@@ -108,6 +121,7 @@ function findClosestElevatorPoint()
                 closestPoint = {
                     distance = distance,
                     elevator = i,
+                    allowedJobs = floorInfo.allowedJobs,
                 }
             end
         end
